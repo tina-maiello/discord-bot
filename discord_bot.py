@@ -42,37 +42,37 @@ async def find_starboard_channel(guild_id):
         if guild_id == guild.id:
             for channel in guild.channels:
                 if(channel.name == 'starboard'):
-                    logger.debug(f'starboard found: {guild.name} | {channel.name}')
+                    logger.debug(f'starboard found: {channel}')
                     return channel
 
 
 # fires every single time there is a reaction in the server
 @client.event
 async def on_raw_reaction_add(payload):
-    logger.debug(f'reaction added: user: {payload.user_id} | emoji: {payload.emoji}  | message_id: {payload.message_id}')
+    logger.debug(f'reaction added: {payload}')
 
-    # fetch details about the message
-    message = await get_message_details(payload)
-    logger.debug(f'message found!: {message}')
+    if payload.emoji.name == '⭐':
+        # fetch details about the message
+        message = await get_message_details(payload)
+        logger.debug(f'message found!: {message}')
 
-    for reaction in message.reactions:
-        if reaction.count >= 1:
-            logger.debug(f'>3 reactions on message: {message}')
+        for reaction in message.reactions:
+            if reaction.count >= 3 and reaction.emoji.name == '⭐':
+                logger.debug(f'>=3 ⭐ reactions on message: {message}')
 
-            # fetch details about the guild's starboard channel
-            starboard_channel = await find_starboard_channel(message.guild.id)
+                # fetch details about the guild's starboard channel
+                starboard_channel = await find_starboard_channel(message.guild.id)
 
-            if starboard_channel is not None:
-                await starboard_channel.send(message.jump_url)
-            else:
-                logger.error(f'failed to find starboard channel in Guild: {message.guild.name},{message.guild.id}')
+                if starboard_channel is not None:
+                    await starboard_channel.send(message.jump_url)
+                else:
+                    logger.error(f'failed to find starboard channel in Guild: {message.guild.name},{message.guild.id}')
             
-
 
 # fires every single time there is a reaction removed in the server
 @client.event
 async def on_raw_reaction_remove(payload):
-    logger.debug(f'reaction removed: user: {payload.user_id} | emoji: {payload.emoji}  | message_id: {payload.message_id}')
+    logger.debug(f'reaction removed: user: {payload}')
 
 
 client.run(bot_secret)
