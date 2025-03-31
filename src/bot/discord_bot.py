@@ -2,7 +2,7 @@ __author__ = "tina-maiello@github"
 
 import os
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv('data/.env')
 bot_secret = os.environ.get("BOT_SECRET")
 
 
