@@ -1,6 +1,8 @@
 __author__ = "tina-maiello@github"
 
+
 import logging
+
 
 class LoggingFormatter(logging.Formatter):
     # Colors

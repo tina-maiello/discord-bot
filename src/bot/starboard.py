@@ -1,8 +1,10 @@
 __author__ = "tina-maiello@github"
 
+
 from discord_bot import BotClient
 import discord
 from logging_formatter import LoggingFormatter
+
 
 class Starboard(BotClient):
     def __init__(self, intents: discord.Intents, emoji='⭐', starboard_channel="starboard", reaction_count=3):
@@ -11,6 +13,7 @@ class Starboard(BotClient):
         self.emoji = emoji
         self.starboard_channel = starboard_channel
         self.reaction_count = reaction_count
+
 
     # attempt to resolve the starboard channel for a given guild
     async def find_starboard_channel(self,guild_id):
@@ -21,12 +24,14 @@ class Starboard(BotClient):
                         self.logger.debug(f'starboard found: {channel}')
                         return channel
 
+
     async def is_message_unique(self, starboard_channel, starboard_message):
         async for message in starboard_channel.history(limit=250):
             details = await self.get_message_details_via_id(message)
             if details.content == starboard_message.jump_url:
                 return False
         return True
+
 
     async def send_in_starboard(self,starboard_channel,starboard_message):
         if starboard_channel is not None:
