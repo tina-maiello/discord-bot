@@ -21,13 +21,22 @@ class Starboard(BotClient):
                         self.logger.debug(f'starboard found: {channel}')
                         return channel
 
+    async def is_message_unique(self, starboard_channel, starboard_message):
+        async for message in starboard_channel.history(limit=250):
+            details = await self.get_message_details_via_id(message)
+            if details.content == starboard_message.jump_url:
+                return False
+        return True
 
-    async def send_in_starboard(self,starboard_channel,message):
+    async def send_in_starboard(self,starboard_channel,starboard_message):
         if starboard_channel is not None:
-            await starboard_channel.send(message.jump_url)
-            self.logger.debug(f'sent message in starboard')
+            message_unique = await self.is_message_unique(starboard_channel,starboard_message)
+
+            if message_unique:
+                await starboard_channel.send(starboard_message.jump_url)
+                self.logger.debug(f'sent message in starboard')
         else:
-            self.logger.error(f'failed to find starboard channel in Guild: {message.guild.name},{message.guild.id}')
+            self.logger.error(f'failed to find starboard channel in Guild: {starboard_message.guild.name},{starboard_message.guild.id}')
 
 
     # fires every single time there is a reaction in the server
@@ -36,11 +45,10 @@ class Starboard(BotClient):
 
         if payload.emoji.name == self.emoji:
             # fetch details about the message
-            message = await self.get_message_details(payload)
+            message = await self.get_message_details_via_payload(payload)
             self.logger.debug(f'message found: {message}')
 
             for reaction in message.reactions:
-                print(reaction)
                 if reaction.count >= int(self.reaction_count) and reaction.emoji == self.emoji:
                     self.logger.debug(f'>={self.reaction_count} {self.emoji} reactions on message: {message}')
 
@@ -55,7 +63,7 @@ class Starboard(BotClient):
         self.logger.debug(f'reaction removed: user: {payload}')
 
         if payload.emoji.name == self.emoji:
-            message = await self.get_message_details(payload)
+            message = await self.get_message_details_via_payload(payload)
 
             for reaction in message.reactions:
                 if reaction.count < self.reaction_count and reaction.emoji == self.emoji:

@@ -33,10 +33,17 @@ class BotClient(discord.Client):
 
 
     # find message via API call, only way to get message.reactions
-    async def get_message_details(self,payload):
+    async def get_message_details_via_payload(self,payload):
         channel = await self.get_channel_details(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
         self.logger.debug(f'message found!: {message}')
+        return message
+    
+        # find message via API call, only way to get message.reactions
+    async def get_message_details_via_id(self,message):
+        channel = await self.get_channel_details(message.channel.id)
+        message_details = await channel.fetch_message(message.id)
+        self.logger.debug(f'message found!: {message_details}')
         return message
     
 
