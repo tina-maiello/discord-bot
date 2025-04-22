@@ -4,19 +4,22 @@ __author__ = "tina-maiello@github"
 import os
 from dotenv import load_dotenv
 import discord
-import argparse
 import logging
-from LoggingFormatter import LoggingFormatter
+from logging_formatter import LoggingFormatter
 import starboard
+import argparse
+
+
+parser = argparse.ArgumentParser(description="discord bot")
+parser.add_argument("-e","--emoji", help="takes in a custom unicode emoji to use as 'starboard' emoji",required=False)
+parser.add_argument("-sc","--starboard_channel", help="takes in a custom string to set as starboard channel",required=False)
+parser.add_argument("-rc","--reaction_count", help="takes in an integer number of reactions to put message into starboard_channel")
 
 
 class BotClient(discord.Client):
-    logger = LoggingFormatter.init_logger(__name__)
-    
-    def __init__(self, intents: discord.Intents, logger: logging.Logger):
+    def __init__(self, intents: discord.Intents):
         super().__init__(intents=intents)
-        self.logger = logger
-        print(self.logger.level)
+        self.logger = LoggingFormatter.init_logger("discord_bot")
 
 
     async def on_ready(self):
@@ -39,11 +42,22 @@ class BotClient(discord.Client):
 
 def main():
     logger = LoggingFormatter.init_logger(__name__)
-    load_dotenv('data/.env')
+    token_path = "data/.env"
+    logger.debug(f'setting environment variables from: {token_path}')
+    load_dotenv(token_path)
     intents = discord.Intents.default()
     intents.message_content = True
-    bot_secret = os.environ.get("BOT_SECRET")
-    client = starboard.Starboard(intents=intents, logger=logger)
+    token_name = "BOT_SECRET"
+    logger.info(f'getting token from environment variable {token_name}')
+    bot_secret = os.environ.get(token_name)
+    args = parser.parse_args()
+    if args.reaction_count:
+        if args.emoji and args.channel:
+            client = starboard.Starboard(intents=intents,emoji=args.emoji,starboard_channel=args.channel, reaction_count=args.reaction_count)
+        else:
+            client = starboard.Starboard(intents=intents, reaction_count=args.reaction_count)
+    else:
+        client = starboard.Starboard(intents=intents)
     client.run(bot_secret)
 
 

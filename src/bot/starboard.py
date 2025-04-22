@@ -1,15 +1,16 @@
+__author__ = "tina-maiello@github"
+
 from discord_bot import BotClient
 import discord
-import logging
-from LoggingFormatter import LoggingFormatter
+from logging_formatter import LoggingFormatter
 
 class Starboard(BotClient):
-    logger = LoggingFormatter.init_logger(__name__)
-
-    def __init__(self, intents: discord.Intents, logger: logging.Logger):
-        super().__init__(intents=intents, logger=self.logger)
-        self.logger = logger
-        print(self.logger.level)
+    def __init__(self, intents: discord.Intents, emoji='⭐', starboard_channel="starboard", reaction_count=3):
+        super().__init__(intents=intents)
+        self.logger = LoggingFormatter.init_logger(__name__)
+        self.emoji = emoji
+        self.starboard_channel = starboard_channel
+        self.reaction_count = reaction_count
 
     # attempt to resolve the starboard channel for a given guild
     async def find_starboard_channel(self,guild_id):
@@ -21,35 +22,42 @@ class Starboard(BotClient):
                         return channel
 
 
+    async def send_in_starboard(self,starboard_channel,message):
+        if starboard_channel is not None:
+            await starboard_channel.send(message.jump_url)
+            self.logger.debug(f'sent message in starboard')
+        else:
+            self.logger.error(f'failed to find starboard channel in Guild: {message.guild.name},{message.guild.id}')
+
+
     # fires every single time there is a reaction in the server
     async def on_raw_reaction_add(self,payload):
         self.logger.debug(f'reaction added: {payload}')
 
-        if payload.emoji.name == '⭐':
+        if payload.emoji.name == self.emoji:
             # fetch details about the message
             message = await self.get_message_details(payload)
-            self.logger.debug(f'message found!: {message}')
+            self.logger.debug(f'message found: {message}')
 
             for reaction in message.reactions:
-                if reaction.count >= 3 and reaction.emoji.name == '⭐':
-                    self.logger.debug(f'>=3 ⭐ reactions on message: {message}')
+                print(reaction)
+                if reaction.count >= int(self.reaction_count) and reaction.emoji == self.emoji:
+                    self.logger.debug(f'>={self.reaction_count} {self.emoji} reactions on message: {message}')
 
                     # fetch details about the guild's starboard channel
                     starboard_channel = await self.find_starboard_channel(message.guild.id)
 
-                    if starboard_channel is not None:
-                        await starboard_channel.send(message.jump_url)
-                    else:
-                        self.logger.error(f'failed to find starboard channel in Guild: {message.guild.name},{message.guild.id}')
-            
+                    await self.send_in_starboard(starboard_channel,message)
+
 
     # fires every single time there is a reaction removed in the server
     async def on_raw_reaction_remove(self,payload):
         self.logger.debug(f'reaction removed: user: {payload}')
 
-        if payload.emoji.name == '⭐':
+        if payload.emoji.name == self.emoji:
             message = await self.get_message_details(payload)
 
             for reaction in message.reactions:
-                if reaction.count < 3 and reaction.emoji.name == '⭐':
-                    self.logger.debug(f'')
+                if reaction.count < self.reaction_count and reaction.emoji == self.emoji:
+                    self.logger.info(f'number of {self.emoji} reactions fell below {self.reaction_count}! removing message from starboard?')
+                    # might not actually remove from starboard for now i am unsure
