@@ -6,6 +6,7 @@ import discord
 from logging_formatter import LoggingFormatter
 
 
+# class which is child of BotClient, which is a child of discord.client
 class Starboard(BotClient):
     def __init__(self, intents: discord.Intents, emoji='⭐', starboard_channel="starboard", reaction_count=3):
         super().__init__(intents=intents)
@@ -25,15 +26,17 @@ class Starboard(BotClient):
                         return channel
 
 
+    # checks if message already exists in starboard
     async def is_message_unique(self, starboard_channel, starboard_message):
         async for message in starboard_channel.history(limit=250):
             if message.reference:
-                details = await self.get_message_reference_details(message.reference)
+                details = await self.get_message_details_via_reference(message.reference)
                 if details.jump_url == starboard_message.jump_url:
                     return False
         return True
 
 
+    # attempt to send message in starboard
     async def send_in_starboard(self,starboard_channel,starboard_message):
         if starboard_channel is not None:
             message_unique = await self.is_message_unique(starboard_channel,starboard_message)

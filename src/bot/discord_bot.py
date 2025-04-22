@@ -10,18 +10,21 @@ import starboard
 import argparse
 
 
+# argument parsing
 parser = argparse.ArgumentParser(description="discord bot")
 parser.add_argument("-e","--emoji", help="takes in a custom unicode emoji to use as 'starboard' emoji",required=False)
 parser.add_argument("-sc","--starboard_channel", help="takes in a custom string to set as starboard channel",required=False)
 parser.add_argument("-rc","--reaction_count", help="takes in an integer number of reactions to put message into starboard_channel")
 
 
+# top level bot client class which had generically usable functions, is a child of discord.Client
 class BotClient(discord.Client):
     def __init__(self, intents: discord.Intents):
         super().__init__(intents=intents)
         self.logger = LoggingFormatter.init_logger("discord_bot")
 
 
+    # once bot mounts and connects
     async def on_ready(self):
         self.logger.info(f'connected: {self.user}')
 
@@ -39,19 +42,22 @@ class BotClient(discord.Client):
         self.logger.debug(f'message found!: {message}')
         return message
     
-        # find message via API call, only way to get message.reactions
+
+    # find message via API call, only way to get message.reactions
     async def get_message_details_via_id(self,message):
         channel = await self.get_channel_details(message.channel.id)
         message_details = await channel.fetch_message(message.id)
         self.logger.debug(f'message found!: {message_details}')
         return message_details
     
-    async def get_message_reference_details(self,reference):
+
+    # find message via API call, only way to get message.reactions
+    async def get_message_details_via_reference(self,reference):
         channel = await self.get_channel_details(reference.channel_id)
         message_details = await channel.fetch_message(reference.message_id)
         self.logger.debug(f'message found!: {message_details}')
         return message_details
-    
+
 
 def main():
     logger = LoggingFormatter.init_logger(__name__)
