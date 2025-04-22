@@ -4,7 +4,6 @@ __author__ = "tina-maiello@github"
 import os
 from dotenv import load_dotenv
 import discord
-import logging
 from logging_formatter import LoggingFormatter
 import starboard
 import argparse

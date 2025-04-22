@@ -42,7 +42,6 @@ class Starboard(BotClient):
             message_unique = await self.is_message_unique(starboard_channel,starboard_message)
 
             if message_unique:
-                # await starboard_channel.send(starboard_message.jump_url)
                 await starboard_message.forward(starboard_channel)
                 self.logger.debug(f'sent message in starboard')
         else:
