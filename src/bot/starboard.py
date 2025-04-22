@@ -27,9 +27,10 @@ class Starboard(BotClient):
 
     async def is_message_unique(self, starboard_channel, starboard_message):
         async for message in starboard_channel.history(limit=250):
-            details = await self.get_message_details_via_id(message)
-            if details.content == starboard_message.jump_url:
-                return False
+            if message.reference:
+                details = await self.get_message_reference_details(message.reference)
+                if details.jump_url == starboard_message.jump_url:
+                    return False
         return True
 
 
@@ -38,7 +39,8 @@ class Starboard(BotClient):
             message_unique = await self.is_message_unique(starboard_channel,starboard_message)
 
             if message_unique:
-                await starboard_channel.send(starboard_message.jump_url)
+                # await starboard_channel.send(starboard_message.jump_url)
+                await starboard_message.forward(starboard_channel)
                 self.logger.debug(f'sent message in starboard')
         else:
             self.logger.error(f'failed to find starboard channel in Guild: {starboard_message.guild.name},{starboard_message.guild.id}')

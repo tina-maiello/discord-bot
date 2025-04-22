@@ -44,7 +44,13 @@ class BotClient(discord.Client):
         channel = await self.get_channel_details(message.channel.id)
         message_details = await channel.fetch_message(message.id)
         self.logger.debug(f'message found!: {message_details}')
-        return message
+        return message_details
+    
+    async def get_message_reference_details(self,reference):
+        channel = await self.get_channel_details(reference.channel_id)
+        message_details = await channel.fetch_message(reference.message_id)
+        self.logger.debug(f'message found!: {message_details}')
+        return message_details
     
 
 def main():
