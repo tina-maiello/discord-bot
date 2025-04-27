@@ -28,6 +28,10 @@ class Starboard(BotClient):
 
     # checks if message already exists in starboard
     async def is_message_unique(self, starboard_channel, starboard_message):
+        if starboard_message.channel.name == 'starboard': # was starboarding things in starboard channel, need a better way to fix this than this
+            return False
+        elif starboard_message.reference:
+            return False
         async for message in starboard_channel.history(limit=250):
             if message.reference:
                 details = await self.get_message_details_via_reference(message.reference)

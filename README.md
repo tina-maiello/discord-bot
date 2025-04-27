@@ -16,3 +16,9 @@ install & run
 
     pip3 install -r requirements.txt
     python3 src/bot/discord_bot.py
+
+## bugs
+- searching all of history is very slow when there are attachments
+- attachments dupe checking doesnt work
+- explicitly handle reference of references
+- 
