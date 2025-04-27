@@ -3,7 +3,7 @@ from logging_formatter import LoggingFormatter
 from dotenv import load_dotenv
 import discord
 import argparse
-import os
+from os import environ
 
 # argument parsing
 parser = argparse.ArgumentParser(description="discord bot")
@@ -20,7 +20,7 @@ def main():
     intents.message_content = True
     token_name = "BOT_SECRET"
     logger.info(f'getting token from environment variable {token_name}')
-    bot_secret = os.environ.get(token_name)
+    bot_secret = environ.get(token_name)
     args = parser.parse_args()
     if args.reaction_count:
         if args.emoji and args.channel:

@@ -7,7 +7,7 @@ from logging_formatter import LoggingFormatter
 class BotClient(discord.Client):
     def __init__(self, intents: discord.Intents):
         super().__init__(intents=intents)
-        self.logger = LoggingFormatter.init_logger("discord_bot")
+        self.logger = LoggingFormatter.init_logger(__name__)
 
 
     # once bot mounts and connects
