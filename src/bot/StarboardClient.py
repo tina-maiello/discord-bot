@@ -4,6 +4,7 @@ __author__ = "tina-maiello@github"
 from bot.BotClient import BotClient
 import discord
 from logging_formatter import LoggingFormatter
+from db import MongoWrapper
 
 
 # class which is child of BotClient, which is a child of discord.client
@@ -14,7 +15,7 @@ class StarboardClient(BotClient):
         self.emoji = emoji
         self.starboard_channel = starboard_channel
         self.reaction_count = reaction_count
-
+        self.mongo_wrapper = MongoWrapper.MongoWrapper()
 
     # attempt to resolve the starboard channel for a given guild
     async def find_starboard_channel(self,guild_id):
@@ -47,6 +48,9 @@ class StarboardClient(BotClient):
 
             if message_unique:
                 await starboard_message.forward(starboard_channel)
+                details = await self.get_message_details_via_id(starboard_message)
+                temp_dict = {"message_id":str(details.id)}
+                self.mongo_wrapper.insert_into_starboard_messages(temp_dict)
                 self.logger.debug(f'sent message in starboard')
         else:
             self.logger.error(f'failed to find starboard channel in Guild: {starboard_message.guild.name},{starboard_message.guild.id}')
