@@ -1,13 +1,13 @@
 __author__ = "tina-maiello@github"
 
 
-from discord_bot import BotClient
+from bot.BotClient import BotClient
 import discord
 from logging_formatter import LoggingFormatter
 
 
 # class which is child of BotClient, which is a child of discord.client
-class Starboard(BotClient):
+class StarboardClient(BotClient):
     def __init__(self, intents: discord.Intents, emoji='⭐', starboard_channel="starboard", reaction_count=3):
         super().__init__(intents=intents)
         self.logger = LoggingFormatter.init_logger(__name__)

@@ -1,8 +1,12 @@
 from pymongo import MongoClient
+import os
+from dotenv import load_dotenv
+load_dotenv("data/.env")
 
-client = MongoClient('172.19.96.1',27017)
 
-db = client.discord_bot
+client = MongoClient(os.environ.get('DB_SECRET'))
+
+db = client.starboard
 col = db['messages']
 print(db)
 
