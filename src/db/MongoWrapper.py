@@ -6,15 +6,10 @@ class MongoWrapper():
     def __init__(self):
         self.logger = LoggingFormatter.init_logger(__name__)
         self.client = MongoClient(environ.get('DB_SECRET'))
-
-    def get_mongo_client(self):
-        return self.client
-
-
-    db = client.starboard
-    col = db['messages']
-    print(db)
-
-    test_dict = {"message_id":"123","message":"321"}
-
-    x = col.insert_one(test_dict)
+    
+    def insert_into_starboard_messages(self, message_dict):
+        db = self.client.starboard
+        col = db['messages']
+        self.logger.debug(f'{self.col}')
+        result = col.insert_one(message_dict)
+        self.logger.debug(f'{result}')
