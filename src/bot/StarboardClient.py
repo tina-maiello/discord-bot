@@ -28,7 +28,7 @@ class StarboardClient(BotClient):
 
 
     # checks if message already exists in starboard
-    # TODO: refactor this to 
+    # TODO: refactor this to use the db
     async def is_message_unique(self, starboard_channel, starboard_message):
         if starboard_message.channel.name == self.starboard_channel: # was starboarding things in starboard channel
             return False                                             # need a better way to fix this than this
@@ -67,7 +67,7 @@ class StarboardClient(BotClient):
 
             for reaction in message.reactions:
                 if reaction.count >= int(self.reaction_count) and reaction.emoji == self.emoji:
-                    self.logger.debug(f'>={self.reaction_count} {self.emoji} reactions on message: {message}')
+                    self.logger.info(f'>={self.reaction_count} {self.emoji} reactions on message id: {message.id}')
 
                     # fetch details about the guild's starboard channel
                     starboard_channel = await self.find_starboard_channel(message.guild.id)
@@ -79,10 +79,10 @@ class StarboardClient(BotClient):
     async def on_raw_reaction_remove(self,payload):
         self.logger.debug(f'reaction removed: user: {payload}')
 
-        if payload.emoji.name == self.emoji:
-            message = await self.get_message_details_via_payload(payload)
+        # if payload.emoji.name == self.emoji:
+        #     message = await self.get_message_details_via_payload(payload)
 
-            for reaction in message.reactions:
-                if reaction.count < self.reaction_count and reaction.emoji == self.emoji:
-                    self.logger.info(f'number of {self.emoji} reactions fell below {self.reaction_count}! removing message from starboard?')
-                    # might not actually remove from starboard for now i am unsure
+        #     for reaction in message.reactions:
+        #         if reaction.count < self.reaction_count and reaction.emoji == self.emoji:
+        #             self.logger.info(f'number of {self.emoji} reactions fell below {self.reaction_count}! removing message from starboard?')
+        #             # might not actually remove from starboard for now i am unsure

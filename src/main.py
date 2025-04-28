@@ -16,10 +16,22 @@ def get_args():
     return parser.parse_args()
 
 
-def load_dotenv_environ_variables(path):
-    logger.debug(f'setting environment variables from: {path}')
-    load_dotenv(path)
+def get_client_from_args(args,intents):
+    if args.reaction_count:
+        if args.emoji and args.channel:
+            client = StarboardClient.StarboardClient(intents=intents,emoji=args.emoji,starboard_channel=args.channel, reaction_count=args.reaction_count)
+        else:
+            client = StarboardClient.StarboardClient(intents=intents, reaction_count=args.reaction_count)
+    else:
+        client = StarboardClient.StarboardClient(intents=intents)
+    return client
 
+def load_dotenv_environ_variables(path):
+    if load_dotenv(path):
+        logger.debug(f'setting environment variables from: {path}')
+    else:
+        logger.error(f'{path} is not populated!')
+        raise Exception(f'{path} is not populated!')
 
 def get_intents_for_discord_bot():
     intents = discord.Intents.default()
@@ -30,14 +42,7 @@ def get_intents_for_discord_bot():
 def init_bot(token_name):
     intents = get_intents_for_discord_bot()
     args = get_args()
-    if args.reaction_count:
-        if args.emoji and args.channel:
-            client = StarboardClient.StarboardClient(intents=intents,emoji=args.emoji,starboard_channel=args.channel, reaction_count=args.reaction_count)
-        else:
-            client = StarboardClient.StarboardClient(intents=intents, reaction_count=args.reaction_count)
-    else:
-        client = StarboardClient.StarboardClient(intents=intents)
-    logger.info(f'getting token from environment variable {token_name}')
+    client = get_client_from_args(args,intents)
     client.run(environ.get(token_name))
     
 
