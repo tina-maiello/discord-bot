@@ -18,21 +18,22 @@ class StarboardClient(BotClient):
         self.mongo_wrapper = MongoWrapper.MongoWrapper()
 
     # attempt to resolve the starboard channel for a given guild
-    async def find_starboard_channel(self,guild_id):
-        for guild in self.guilds:
+    async def find_starboard_channel(self,guild_id): # TODO: refactor this to check a guilds table in db
+        for guild in self.guilds:                    # if not there then resolve via this O(xn) approach
             if guild_id == guild.id:
                 for channel in guild.channels:
-                    if(channel.name == 'starboard'):
-                        self.logger.debug(f'starboard found: {channel}')
+                    if(channel.name == self.starboard_channel):
+                        self.logger.debug(f'starboard channel found: {channel}')
                         return channel
 
 
     # checks if message already exists in starboard
+    # TODO: refactor this to 
     async def is_message_unique(self, starboard_channel, starboard_message):
-        if starboard_message.channel.name == 'starboard': # was starboarding things in starboard channel, need a better way to fix this than this
-            return False
-        elif starboard_message.reference:
-            return False
+        if starboard_message.channel.name == self.starboard_channel: # was starboarding things in starboard channel
+            return False                                             # need a better way to fix this than this
+        elif starboard_message.reference: # removing starboarding a forwarded message for now
+            return False                  # because it caused strange behavior in the discord client
         async for message in starboard_channel.history(limit=250):
             if message.reference:
                 details = await self.get_message_details_via_reference(message.reference)
@@ -63,7 +64,6 @@ class StarboardClient(BotClient):
         if payload.emoji.name == self.emoji:
             # fetch details about the message
             message = await self.get_message_details_via_payload(payload)
-            self.logger.debug(f'message found: {message}')
 
             for reaction in message.reactions:
                 if reaction.count >= int(self.reaction_count) and reaction.emoji == self.emoji:
