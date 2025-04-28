@@ -21,6 +21,13 @@ class BotClient(discord.Client):
         return channel or await self.fetch_channel(channel_id)
 
 
+
+    ###
+    # TODO: refactor get_message to have a singular entrypoint,
+    # and handle the different message types inside
+    ###
+    
+
     # find message via API call, only way to get message.reactions
     async def get_message_details_via_payload(self,payload):
         channel = await self.get_channel_details(payload.channel_id)
