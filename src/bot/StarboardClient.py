@@ -17,6 +17,7 @@ class StarboardClient(BotClient):
         self.reaction_count = reaction_count
         self.mongo_wrapper = MongoWrapper.MongoWrapper()
 
+
     # attempt to resolve the starboard channel for a given guild
     async def find_starboard_channel(self,guild_id):
         db_channel = self.mongo_wrapper.find_guilds_starboard(guild_id)
@@ -34,22 +35,19 @@ class StarboardClient(BotClient):
 
 
     # checks if message already exists in starboard
+    # TODO: search via guild_id as well to ensure a message.id could technically be starboarded in multiple servers at once
     async def is_message_unique(self, starboard_channel, starboard_message):
-        if starboard_message.channel.name == self.starboard_channel: # was starboarding things in starboard channel
+        if starboard_message.channel.name == self.starboard_channel: # TODO: fix: was starboarding things in starboard channel
             return False                                             # need a better way to fix this than this
-        elif starboard_message.reference: # removing starboarding a forwarded message for now
+        elif starboard_message.reference: # TODO: fix: removing starboarding a forwarded message for now
             return False                  # because it caused strange behavior in the discord client
         
-        # async for message in starboard_channel.history(limit=250):
-        #     if message.reference:
-        #         details = await self.get_message_details(message.reference)
-        #         if details.jump_url == starboard_message.jump_url:
-        #             return False
         if self.mongo_wrapper.find_starboard_message(starboard_message.id) is not None:
             self.logger.debug(f'message is already starboarded. message_id: {starboard_message.id}')
             return False
         return True
     
+
     # converts discord.Message object into a db valid insertable dictionary
     def convert_message_to_db_object(self,message):
         for reaction in message.reactions:
