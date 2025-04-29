@@ -25,10 +25,20 @@ class MongoWrapper():
         self.logger.debug(f'{result}')
         return result
     
+
     def find_guilds_starboard(self, guild_id):
         db = self.client.starboard
         col = db['guilds']
         self.logger.debug(f'{col}')
         result = col.find_one({"guild_id":guild_id})
+        self.logger.debug(f'{result}')
+        return result
+    
+    
+    def find_starboard_message(self,message_id):
+        db = self.client.starboard
+        col = db['messages']
+        self.logger.debug(f'{col}')
+        result = col.find_one({"message_id":message_id})
         self.logger.debug(f'{result}')
         return result

@@ -61,8 +61,9 @@ class StarboardClient(BotClient):
             if message_unique:
                 await starboard_message.forward(starboard_channel)
                 details = await self.get_message_details(starboard_message)
-                self.mongo_wrapper.insert_into_starboard_messages(self.convert_message_to_db_object(details))
-                self.logger.debug(f'sent message in starboard')
+                if self.mongo_wrapper.find_starboard_message(details.id) is not None:
+                    self.mongo_wrapper.insert_into_starboard_messages(self.convert_message_to_db_object(details))
+                self.logger.info(f'sent message_id: {details.id} in starboard')
         else:
             self.logger.error(f'failed to find starboard channel in Guild: {starboard_message.guild.name},{starboard_message.guild.id}')
 
