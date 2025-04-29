@@ -36,7 +36,7 @@ class StarboardClient(BotClient):
             return False                  # because it caused strange behavior in the discord client
         async for message in starboard_channel.history(limit=250):
             if message.reference:
-                details = await self.get_message_details_via_reference(message.reference)
+                details = await self.get_message_details(message.reference)
                 if details.jump_url == starboard_message.jump_url:
                     return False
         return True
@@ -49,7 +49,7 @@ class StarboardClient(BotClient):
 
             if message_unique:
                 await starboard_message.forward(starboard_channel)
-                details = await self.get_message_details_via_id(starboard_message)
+                details = await self.get_message_details(starboard_message)
                 temp_dict = {"message_id":str(details.id)}
                 self.mongo_wrapper.insert_into_starboard_messages(temp_dict)
                 self.logger.debug(f'sent message in starboard')
@@ -63,7 +63,7 @@ class StarboardClient(BotClient):
 
         if payload.emoji.name == self.emoji:
             # fetch details about the message
-            message = await self.get_message_details_via_payload(payload)
+            message = await self.get_message_details(payload)
 
             for reaction in message.reactions:
                 if reaction.count >= int(self.reaction_count) and reaction.emoji == self.emoji:

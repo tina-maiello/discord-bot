@@ -21,18 +21,24 @@ class BotClient(discord.Client):
         return channel or await self.fetch_channel(channel_id)
 
 
+    # find message any type
+    async def get_message_details(self,message):
+        if isinstance(message,discord.RawReactionActionEvent):
+            details = await self.get_message_details_via_payload(message)
+        elif isinstance(message,discord.MessageReference):
+            details = await self.get_message_details_via_reference(message)
+        elif isinstance(message,discord.Message):
+            details = await self.get_message_details_via_id(message)
+        else:
+            details = None
+        return details
 
-    ###
-    # TODO: refactor get_message to have a singular entrypoint,
-    # and handle the different message types inside
-    ###
-    
 
     # find message via API call, only way to get message.reactions
     async def get_message_details_via_payload(self,payload):
         channel = await self.get_channel_details(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-        self.logger.debug(f'message found!: {message}')
+        self.logger.debug(f'message found via payload: {message}')
         return message
     
 
@@ -40,7 +46,7 @@ class BotClient(discord.Client):
     async def get_message_details_via_id(self,message):
         channel = await self.get_channel_details(message.channel.id)
         message_details = await channel.fetch_message(message.id)
-        self.logger.debug(f'message found!: {message_details}')
+        self.logger.debug(f'message found via id: {message_details}')
         return message_details
     
 
@@ -48,7 +54,7 @@ class BotClient(discord.Client):
     async def get_message_details_via_reference(self,reference):
         channel = await self.get_channel_details(reference.channel_id)
         message_details = await channel.fetch_message(reference.message_id)
-        self.logger.debug(f'message found!: {message_details}')
+        self.logger.debug(f'message found via reference: {message_details}')
         return message_details
 
 
