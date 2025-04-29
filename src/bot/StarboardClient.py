@@ -18,12 +18,18 @@ class StarboardClient(BotClient):
         self.mongo_wrapper = MongoWrapper.MongoWrapper()
 
     # attempt to resolve the starboard channel for a given guild
-    async def find_starboard_channel(self,guild_id): # TODO: refactor this to check a guilds table in db
-        for guild in self.guilds:                    # if not there then resolve via this O(xn) approach
+    async def find_starboard_channel(self,guild_id):
+        db_channel = self.mongo_wrapper.find_guilds_starboard(guild_id)
+        if db_channel:
+            channel = await self.get_channel_details(db_channel['channel_id'])
+            self.logger.debug(f'starboard channel found via db: {channel}')
+            return channel
+        for guild in self.guilds:
             if guild_id == guild.id:
                 for channel in guild.channels:
                     if(channel.name == self.starboard_channel):
-                        self.logger.debug(f'starboard channel found: {channel}')
+                        self.logger.debug(f'starboard channel found by iterating through guilds: {channel}')
+                        self.mongo_wrapper.insert_into_starboard_guilds({"guild_id":guild.id,"channel_name":channel.name,"channel_id":channel.id})
                         return channel
 
 
@@ -40,7 +46,12 @@ class StarboardClient(BotClient):
                 if details.jump_url == starboard_message.jump_url:
                     return False
         return True
+    
 
+    def convert_message_to_db_object(self,message):
+        for reaction in message.reactions:
+            if reaction.emoji == self.emoji:
+                return {"message_id":str(message.id),"guild_id":str(message.channel.id),"reaction_emoji":str(reaction.emoji),"reaction_count":str(reaction.count)}
 
     # attempt to send message in starboard
     async def send_in_starboard(self,starboard_channel,starboard_message):
@@ -50,8 +61,7 @@ class StarboardClient(BotClient):
             if message_unique:
                 await starboard_message.forward(starboard_channel)
                 details = await self.get_message_details(starboard_message)
-                temp_dict = {"message_id":str(details.id)}
-                self.mongo_wrapper.insert_into_starboard_messages(temp_dict)
+                self.mongo_wrapper.insert_into_starboard_messages(self.convert_message_to_db_object(details))
                 self.logger.debug(f'sent message in starboard')
         else:
             self.logger.error(f'failed to find starboard channel in Guild: {starboard_message.guild.name},{starboard_message.guild.id}')
@@ -77,12 +87,12 @@ class StarboardClient(BotClient):
 
     # fires every single time there is a reaction removed in the server
     async def on_raw_reaction_remove(self,payload):
-        self.logger.debug(f'reaction removed: user: {payload}')
+        self.logger.debug(f'reaction removed: {payload}')
 
-        # if payload.emoji.name == self.emoji:
-        #     message = await self.get_message_details_via_payload(payload)
+        if payload.emoji.name == self.emoji:
+            message = await self.get_message_details(payload)
 
-        #     for reaction in message.reactions:
-        #         if reaction.count < self.reaction_count and reaction.emoji == self.emoji:
-        #             self.logger.info(f'number of {self.emoji} reactions fell below {self.reaction_count}! removing message from starboard?')
-        #             # might not actually remove from starboard for now i am unsure
+            for reaction in message.reactions:
+                if reaction.count < self.reaction_count and reaction.emoji == self.emoji:
+                    self.logger.info(f'number of {self.emoji} reactions fell below {self.reaction_count}! removing message from starboard?')
+                    # might not actually remove from starboard for now i am unsure

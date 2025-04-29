@@ -24,3 +24,11 @@ class MongoWrapper():
         result = col.insert_one(guild_dict)
         self.logger.debug(f'{result}')
         return result
+    
+    def find_guilds_starboard(self, guild_id):
+        db = self.client.starboard
+        col = db['guilds']
+        self.logger.debug(f'{col}')
+        result = col.find_one({"guild_id":guild_id})
+        self.logger.debug(f'{result}')
+        return result
