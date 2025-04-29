@@ -18,7 +18,7 @@ install & run
     python3 src/bot/discord_bot.py
 
 ## bugs
-- searching all of history is very slow when there are attachments
 - attachments dupe checking doesnt work
+    - doesnt really handle attachments at all right now
 - explicitly handle reference of references
-- 
+- more robustly consider if the message.id is also starboarded in a certain guild, could be starboarded in 2 guilds
