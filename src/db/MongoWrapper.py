@@ -34,7 +34,7 @@ class MongoWrapper():
         self.logger.debug(f'{result}')
         return result
     
-    
+
     def find_starboard_message(self,message_id):
         db = self.client.starboard
         col = db['messages']

@@ -34,24 +34,28 @@ class StarboardClient(BotClient):
 
 
     # checks if message already exists in starboard
-    # TODO: refactor this to use the db
     async def is_message_unique(self, starboard_channel, starboard_message):
         if starboard_message.channel.name == self.starboard_channel: # was starboarding things in starboard channel
             return False                                             # need a better way to fix this than this
         elif starboard_message.reference: # removing starboarding a forwarded message for now
             return False                  # because it caused strange behavior in the discord client
-        async for message in starboard_channel.history(limit=250):
-            if message.reference:
-                details = await self.get_message_details(message.reference)
-                if details.jump_url == starboard_message.jump_url:
-                    return False
+        
+        # async for message in starboard_channel.history(limit=250):
+        #     if message.reference:
+        #         details = await self.get_message_details(message.reference)
+        #         if details.jump_url == starboard_message.jump_url:
+        #             return False
+        if self.mongo_wrapper.find_starboard_message(starboard_message.id) is not None:
+            self.logger.debug(f'message is already starboarded. message_id: {starboard_message.id}')
+            return False
         return True
     
-
+    # converts discord.Message object into a db valid insertable dictionary
     def convert_message_to_db_object(self,message):
         for reaction in message.reactions:
             if reaction.emoji == self.emoji:
-                return {"message_id":str(message.id),"guild_id":str(message.channel.id),"reaction_emoji":str(reaction.emoji),"reaction_count":str(reaction.count)}
+                return {"message_id":message.id,"channel_id":message.channel.id,"guild_id":message.guild.id,"reaction_emoji":str(reaction.emoji),"reaction_count":reaction.count}
+
 
     # attempt to send message in starboard
     async def send_in_starboard(self,starboard_channel,starboard_message):
@@ -61,7 +65,7 @@ class StarboardClient(BotClient):
             if message_unique:
                 await starboard_message.forward(starboard_channel)
                 details = await self.get_message_details(starboard_message)
-                if self.mongo_wrapper.find_starboard_message(details.id) is not None:
+                if self.mongo_wrapper.find_starboard_message(details.id) is None:
                     self.mongo_wrapper.insert_into_starboard_messages(self.convert_message_to_db_object(details))
                 self.logger.info(f'sent message_id: {details.id} in starboard')
         else:
