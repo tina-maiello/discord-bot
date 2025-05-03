@@ -28,7 +28,7 @@ class BotClient(discord.Client):
         elif isinstance(message,discord.MessageReference):
             details = await self.get_message_details_via_reference(message)
         elif isinstance(message,discord.Message):
-            details = await self.get_message_details_via_id(message)
+            details = await self.get_message_details_via_message(message)
         else:
             details = None
         return details
@@ -43,7 +43,7 @@ class BotClient(discord.Client):
     
 
     # find message via API call, only way to get message.reactions
-    async def get_message_details_via_id(self,message):
+    async def get_message_details_via_message(self,message):
         channel = await self.get_channel_details(message.channel.id)
         message_details = await channel.fetch_message(message.id)
         self.logger.debug(f'message found via id: {message_details}')
